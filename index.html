@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Smart Script Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&display=swap');
+        body { background: #070707; color: #eee; font-family: 'Plus Jakarta Sans', sans-serif; height: 100vh; overflow: hidden; }
+        .sidebar { background: #0f0f0f; border-right: 1px solid #1a1a1a; }
+        .input-box { background: #070707; border: 1px solid #222; color: white; transition: 0.2s; }
+        .input-box:focus { border-color: #3b82f6; outline: none; }
+        .btn-gen { background: #3b82f6; font-weight: 800; cursor: pointer; transition: 0.3s; }
+        .btn-gen:hover { background: #2563eb; letter-spacing: 1px; }
+        .preview-area { border: 2px dashed #222; border-radius: 20px; height: 160px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: #0a0a0a; cursor: pointer; }
+        .media-preview { height: 100%; width: 100%; object-fit: cover; }
+        .spinner { width: 30px; height: 30px; border: 3px solid #3b82f6; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .final-script-box { background: #0f0f0f; border: 1px solid #1a1a1a; border-radius: 30px; padding: 45px; position: relative; }
+    </style>
+</head>
+<body class="flex">
+
+    <!-- Sidebar -->
+    <aside class="sidebar w-80 p-6 flex flex-col space-y-6">
+        <div>
+            <h1 class="text-2xl font-black tracking-tighter uppercase italic">SCRIPT<span class="text-blue-500">AI</span></h1>
+            <p class="text-[9px] text-zinc-600 font-bold tracking-widest uppercase">Video Scenes & Social Posts</p>
+        </div>
+
+        <div class="space-y-5">
+            <div class="preview-area" onclick="document.getElementById('mediaIn').click()">
+                <input type="file" id="mediaIn" class="hidden" accept="image/*,video/*" onchange="handleMedia(this)">
+                <div id="up-placeholder" class="text-center">
+                    <i class="fa fa-plus text-xl text-zinc-800 mb-2"></i>
+                    <p class="text-[9px] text-zinc-700 font-black uppercase">Upload Media</p>
+                </div>
+                <div id="preview-container" class="hidden h-full w-full"></div>
+            </div>
+
+            <textarea id="promptIn" class="input-box w-full h-40 rounded-2xl p-4 text-xs resize-none" placeholder="What is this about? (e.g. Travel Vlog, Product Ad, or Gym Post)"></textarea>
+
+            <button onclick="generate()" class="btn-gen w-full py-4 rounded-2xl text-[11px] uppercase tracking-widest text-white shadow-2xl">
+                Generate Final Script
+            </button>
+
+            <button onclick="location.reload()" class="w-full text-[9px] font-bold text-zinc-700 uppercase hover:text-zinc-400">
+                Reset App
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main View -->
+    <main class="flex-1 p-12 overflow-y-auto bg-black">
+        <div class="max-w-3xl mx-auto">
+            <div id="outputArea">
+                <div class="flex flex-col items-center justify-center py-48 opacity-10">
+                    <i class="fa fa-wand-magic-sparkles text-6xl mb-4"></i>
+                    <p class="text-xs uppercase tracking-[0.4em]">Ready for Analysis</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Loading -->
+    <div id="loading" class="hidden fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-center">
+        <div class="spinner mb-4"></div>
+        <p class="text-blue-500 font-bold text-[10px] uppercase tracking-widest animate-pulse">Syncing with Media...</p>
+    </div>
+
+    <script>
+        let isVideo = false;
+        let mediaReady = false;
+
+        function handleMedia(input) {
+            const file = input.files[0];
+            if (!file) return;
+            isVideo = file.type.startsWith('video/');
+            const container = document.getElementById('preview-container');
+            const reader = new FileReader();
+            reader.onload = e => {
+                container.innerHTML = isVideo ? `<video src="${e.target.result}" class="media-preview" autoplay muted loop></video>` : `<img src="${e.target.result}" class="media-preview">`;
+                container.classList.remove('hidden');
+                document.getElementById('up-placeholder').classList.add('hidden');
+                mediaReady = true;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function generate() {
+            const prompt = document.getElementById('promptIn').value;
+            const output = document.getElementById('outputArea');
+            const loader = document.getElementById('loading');
+
+            if (!mediaReady && !prompt) return alert("Add media or text!");
+
+            loader.classList.remove('hidden');
+
+            setTimeout(() => {
+                let content = "";
+                if (isVideo) {
+                    // Video Script Format (With Scenes)
+                    content = `
+                        <div class="space-y-10">
+                            <div>
+                                <h3 class="text-blue-500 font-black text-xs uppercase mb-3 tracking-widest underline decoration-2 underline-offset-8">Scene 1: The Hook</h3>
+                                <p class="text-xl leading-relaxed italic text-zinc-300">"[Visual: Fast cut transitions.] Stop scrolling! Look at this incredible perspective we've captured today. The energy is unmatched."</p>
+                            </div>
+                            <div>
+                                <h3 class="text-blue-500 font-black text-xs uppercase mb-3 tracking-widest underline decoration-2 underline-offset-8">Scene 2: Core Details</h3>
+                                <p class="text-xl leading-relaxed italic text-zinc-300">"[Visual: Slow motion b-roll of the details.] We're diving deep into the craftsmanship here. Everything from the texture to the lighting speaks for itself."</p>
+                            </div>
+                            <div>
+                                <h3 class="text-blue-500 font-black text-xs uppercase mb-3 tracking-widest underline decoration-2 underline-offset-8">Scene 3: The Outro</h3>
+                                <p class="text-xl leading-relaxed italic text-zinc-300">"[Visual: High-angle wide shot.] Don't miss out on this experience. Check the link in bio to learn more and join the journey."</p>
+                            </div>
+                        </div>`;
+                } else {
+                    // Simple Post Format (No Scenes)
+                    content = `
+                        <div class="space-y-6">
+                            <h3 class="text-zinc-500 font-black text-xs uppercase tracking-[0.3em] mb-4">Final Post Script</h3>
+                            <p class="text-2xl leading-snug font-light text-white">
+                                "Elevating the standard, one detail at a time. ✨ <br><br>
+                                Capturing the perfect balance between style and substance. Whether you're looking for inspiration or a complete transformation, this is where it begins. <br><br>
+                                Tag someone who needs to see this! 👇 #Innovation #Lifestyle #Quality"
+                            </p>
+                        </div>`;
+                }
+
+                output.innerHTML = `<div class="final-script-box animate-in fade-in slide-in-from-bottom-10 duration-700">${content}</div>`;
+                loader.classList.add('hidden');
+            }, 1500);
+        }
+    </script>
+</body>
+</html>
